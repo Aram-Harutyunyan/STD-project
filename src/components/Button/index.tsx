@@ -1,7 +1,7 @@
 interface Props {
   type: 'button' | 'submit'
   name: string
-  handleClick: () => void
+  handleClick?: () => void
   width?: number
   height?: number
 }

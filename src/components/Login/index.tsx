@@ -5,8 +5,6 @@ import Input from '../Input'
 import Button from '../Button'
 
 const LoginForm = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,25 +16,30 @@ const LoginForm = () => {
     password: '',
   })
 
-  const handleLogin = () => {
-    // Perform validation here
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+
     const newErrors = {} as {
       email: string
       password: string
     }
 
-    if (!email) {
+    if (!formData.email) {
       newErrors.email = 'Email is required'
-    } else if (!isValidEmail(email)) {
+    } else if (!isValidEmail(formData.email)) {
       newErrors.email = 'Please enter a valid email address'
     }
 
-    if (!password) {
+    if (!formData.password) {
       newErrors.password = 'Password is required'
     }
 
     if (Object.keys(newErrors).length === 0) {
       console.log('Logging in...')
+      setErrors({
+        email: '',
+        password: '',
+      })
     } else {
       setErrors(newErrors)
     }
@@ -47,7 +50,10 @@ const LoginForm = () => {
   return (
     <div className="flex rounded-2xl items-center justify-center pt-5 pr-10 pb-10 pl-10 bg-bg--Wrapper">
       <div className="w-full max-w-md">
-        <form>
+        <h1 className="flex pb-4 justify-center text-2xl text-ct--Blue">
+          Sign In
+        </h1>
+        <form onSubmit={handleLogin}>
           <div className="flex flex-col pb-4 gap-4">
             <Input
               id="email"
@@ -83,7 +89,7 @@ const LoginForm = () => {
             </label>
           </div>
           <div className="pb-2 pt-2 flex items-center justify-center">
-            <Button type="submit" handleClick={handleLogin} name="Sign In" />
+            <Button type="submit" name="Sign In" />
           </div>
           <div className="flex justify-center text-sm text-gray-600">
             Don't have an account?
