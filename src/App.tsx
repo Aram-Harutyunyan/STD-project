@@ -11,7 +11,6 @@ import ProtectedRoute from './components/protectedRoute'
 import './App.css'
 
 const App = () => {
-  const user = ''
   return (
     <BrowserRouter>
       <Routes>
@@ -21,7 +20,7 @@ const App = () => {
           <Route
             index
             element={
-              <ProtectedRoute user={user}>
+              <ProtectedRoute>
                 <Posts />
               </ProtectedRoute>
             }
@@ -29,7 +28,7 @@ const App = () => {
           <Route
             path="create"
             element={
-              <ProtectedRoute user={user}>
+              <ProtectedRoute>
                 <PostCreate />
               </ProtectedRoute>
             }
@@ -37,7 +36,7 @@ const App = () => {
           <Route
             path="edit/:id"
             element={
-              <ProtectedRoute user={user}>
+              <ProtectedRoute>
                 <PostEdit />
               </ProtectedRoute>
             }

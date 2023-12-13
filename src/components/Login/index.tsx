@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import isValidEmail from '../../helpers/isValidEmail'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import Input from '../Input'
 import Button from '../Button'
+import api from '../../utils/api'
+import { setAuthData } from '../../redux/slices/authSlice'
+import { useAppDispatch } from '../../hooks'
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -15,33 +19,57 @@ const LoginForm = () => {
     email: '',
     password: '',
   })
-
-  const handleLogin = (e: React.FormEvent) => {
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    try {
+      const newErrors = {} as {
+        email: string
+        password: string
+      }
 
-    const newErrors = {} as {
-      email: string
-      password: string
-    }
+      if (!formData.email) {
+        newErrors.email = 'Email is required'
+      } else if (!isValidEmail(formData.email)) {
+        newErrors.email = 'Please enter a valid email address'
+      }
 
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!isValidEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
-    }
+      if (!formData.password) {
+        newErrors.password = 'Password is required'
+      }
 
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    }
+      if (Object.keys(newErrors).length === 0) {
+        setErrors({
+          email: '',
+          password: '',
+        })
+        const loginResponse = await api.post(
+          '/user/sign-in/',
+          { email: formData.email, password: formData.password },
+          false,
+        )
 
-    if (Object.keys(newErrors).length === 0) {
-      console.log('Logging in...')
-      setErrors({
-        email: '',
-        password: '',
-      })
-    } else {
-      setErrors(newErrors)
+        if (formData.rememberMe) {
+          localStorage.setItem('authToken', loginResponse.token.access)
+          localStorage.setItem('refreshToken', loginResponse.token.refresh)
+        } else {
+          sessionStorage.setItem('authToken', loginResponse.token.access)
+          sessionStorage.setItem('refreshToken', loginResponse.token.refresh)
+        }
+        dispatch(
+          setAuthData({
+            accessToken: loginResponse.token.access,
+            refreshToken: loginResponse.token.refresh,
+            user: loginResponse.user,
+          }),
+        )
+        navigate('/posts')
+      } else {
+        setErrors(newErrors)
+      }
+    } catch (error) {
+      console.log('Error during login:', error)
     }
   }
   const handleRememberMeChange = () => {
