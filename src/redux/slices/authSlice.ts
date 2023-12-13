@@ -1,11 +1,21 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+interface PayloadUser {
+  id: number
+  email: string
+  first_name: string
+  last_name: string
+  image: string
+  is_active: boolean
+}
+
 interface User {
-  id: string
+  id: number
   email: string
   name: string
   surname: string
-  image?: string
+  image: string
+  isActive: boolean
 }
 
 interface AuthState {
@@ -27,22 +37,40 @@ const authSlice = createSlice({
     setUserData: (
       state,
       action: PayloadAction<{
-        user: User | null
+        user: PayloadUser
       }>,
     ) => {
-      state.user = action.payload.user
+      const { email, id, image, first_name, last_name, is_active } =
+        action.payload.user
+      state.user = {
+        image,
+        name: first_name,
+        surname: last_name,
+        id,
+        email,
+        isActive: is_active,
+      }
     },
     setAuthData: (
       state,
       action: PayloadAction<{
         accessToken: string
         refreshToken: string
-        user: AuthState['user']
+        user: PayloadUser
       }>,
     ) => {
+      const { email, id, image, first_name, last_name, is_active } =
+        action.payload.user
+      state.user = {
+        image,
+        name: first_name,
+        surname: last_name,
+        id,
+        email,
+        isActive: is_active,
+      }
       state.accessToken = action.payload.accessToken
       state.refreshToken = action.payload.refreshToken
-      state.user = action.payload.user
     },
     clearAuthData: (state) => {
       state.accessToken = null
