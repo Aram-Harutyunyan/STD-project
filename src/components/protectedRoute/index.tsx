@@ -1,10 +1,11 @@
-import { ReactElement, useEffect } from 'react'
+import { ReactElement, ReactNode, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch } from '../../hooks'
 import { setUserData } from '../../redux/slices/authSlice'
 import api from '../../utils/api'
+import ProtectedRoutesContainer from '../../Containers/ProtectedRoutesContainer'
 
-const ProtectedRoute = ({ children }: { children: ReactElement }) => {
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
 
@@ -26,8 +27,7 @@ const ProtectedRoute = ({ children }: { children: ReactElement }) => {
 
     checkUserAuthentication()
   }, [])
-
-  return children
+  return <ProtectedRoutesContainer>{children}</ProtectedRoutesContainer>
 }
 
 export default ProtectedRoute
