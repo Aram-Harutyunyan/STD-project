@@ -1,42 +1,85 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
+import api from '../../utils/api'
+
+interface Author {
+  id: number
+  full_name: string
+}
+
+interface Category {
+  id: number
+  slug: string
+  name: string
+}
 
 interface Post {
   id: number
   title: string
+  description: string
+  image: string
+  category: Category
+  author: Author
 }
 
 interface PostsState {
-  list: Post[]
+  results: Post[]
+  count: number
+  next: string | null
+  previous: string | null
 }
+export const fetchPosts = createAsyncThunk(
+  'posts/fetchPosts',
+  async (url: string) => {
+    const response = await api.get(url)
+    console.log('RESPONSE', response)
+    // Assuming that the API response has the same structure as your PostsState
+    return response as PostsState
+  },
+)
 
 const initialState: PostsState = {
-  list: [],
+  results: [],
+  count: 0,
+  next: null,
+  previous: null,
 }
 
 const postsSlice = createSlice({
   name: 'posts',
   initialState,
   reducers: {
-    getPosts: (state, action: PayloadAction<Post[]>) => {
-      state.list = action.payload
+    getPosts: (state, action: PayloadAction<PostsState>) => {
+      // Update state with the fetched posts data
+      state.results = action.payload.results
+      state.count = action.payload.count
+      state.next = action.payload.next
+      state.previous = action.payload.previous
+      console.log('STATE', state)
     },
     addPost: (state, action: PayloadAction<Post>) => {
-      state.list.push(action.payload)
+      state.results.push(action.payload)
     },
     editPost: (
       state,
       action: PayloadAction<{ id: number; updatedPost: Post }>,
     ) => {
       const { id, updatedPost } = action.payload
-      const index = state.list.findIndex((post) => post.id === id)
+      const index = state.results.findIndex((post) => post.id === id)
       if (index !== -1) {
-        state.list[index] = updatedPost
+        state.results[index] = updatedPost
       }
     },
     deletePost: (state, action: PayloadAction<number>) => {
       const postId = action.payload
-      state.list = state.list.filter((post) => post.id !== postId)
+      state.results = state.results.filter((post) => post.id !== postId)
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchPosts.fulfilled, (state, action) => {
+      console.log('dispatched', action)
+      // Dispatch the getPosts action to update the Redux state
+      postsSlice.caseReducers.getPosts(state, action)
+    })
   },
 })
 
