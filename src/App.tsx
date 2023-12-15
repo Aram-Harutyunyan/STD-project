@@ -7,15 +7,29 @@ import Posts from './components/Posts'
 import PostCreate from './components/Posts/postsCreate'
 import PostEdit from './components/Posts/postsEdit'
 import ProtectedRoute from './components/protectedRoute'
-
+import AuthorizationContainer from './Containers/AuthorizationContainer'
 import './App.css'
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path={'/login'} element={<Login />} />
-        <Route path="/registration" element={<Registration />} />
+        <Route
+          path={'/login'}
+          element={
+            <AuthorizationContainer>
+              <Login />
+            </AuthorizationContainer>
+          }
+        />
+        <Route
+          path="/registration"
+          element={
+            <AuthorizationContainer>
+              <Registration />
+            </AuthorizationContainer>
+          }
+        />
         <Route path="/posts">
           <Route
             index
