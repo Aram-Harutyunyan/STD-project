@@ -22,12 +22,14 @@ interface AuthState {
   accessToken: string | null
   refreshToken: string | null
   user: User | null
+  message: string | null
 }
 
 const initialState: AuthState = {
   accessToken: null,
   refreshToken: null,
   user: null,
+  message: null,
 }
 
 const authSlice = createSlice({
@@ -77,8 +79,17 @@ const authSlice = createSlice({
       state.refreshToken = null
       state.user = null
     },
+    setAuthMessage: (
+      state,
+      action: PayloadAction<{
+        message: string
+      }>,
+    ) => {
+      state.message = action.payload.message
+    },
   },
 })
 
-export const { setUserData, setAuthData, clearAuthData } = authSlice.actions
+export const { setUserData, setAuthData, clearAuthData, setAuthMessage } =
+  authSlice.actions
 export default authSlice

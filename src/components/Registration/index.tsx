@@ -1,17 +1,32 @@
 import { useState } from 'react'
 import isValidEmail from '../../helpers/isValidEmail'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Input from '../Input'
 import Button from '../Button'
 import AvatarIcon from '../../assets/Avatar.svg?react'
+import { setAuthMessage } from '../../redux/slices/authSlice'
+import api from '../../utils/api'
+import { useAppDispatch } from '../../hooks'
+
+interface SignUpFormState {
+  name: string
+  surname: string
+  email: string
+  password: string
+  confirmPassword: string
+  image: File
+}
 
 const RegistrationForm = () => {
-  const [formData, setFormData] = useState({
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const [data, setData] = useState<SignUpFormState>({
     name: '',
     surname: '',
     email: '',
     password: '',
     confirmPassword: '',
+    image: null as unknown as File,
   })
 
   const [errors, setErrors] = useState({
@@ -20,9 +35,10 @@ const RegistrationForm = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    image: '',
   })
 
-  const handleRegistration = (e: React.FormEvent) => {
+  const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault()
     const newErrors = {} as {
       name: string
@@ -30,43 +46,72 @@ const RegistrationForm = () => {
       email: string
       password: string
       confirmPassword: string
+      image: string
     }
-    if (!formData.name) {
+    if (!data.name) {
       newErrors.name = 'Name is required'
     }
 
-    if (!formData.surname) {
+    if (!data.surname) {
       newErrors.surname = 'Surname is required'
     }
 
-    if (!formData.email) {
+    if (!data.email) {
       newErrors.email = 'Email is required'
-    } else if (!isValidEmail(formData.email)) {
+    } else if (!isValidEmail(data.email)) {
       newErrors.email = 'Please enter a valid email address'
     }
 
-    if (!formData.password) {
+    if (!data.password) {
       newErrors.password = 'Password is required'
     }
 
-    if (!formData.confirmPassword) {
+    if (!data.confirmPassword) {
       newErrors.confirmPassword = 'Confirm Password is required'
-    } else if (formData.password !== formData.confirmPassword) {
+    } else if (data.password !== data.confirmPassword) {
       newErrors.confirmPassword = 'Does not match with password !'
+    }
+    if (!data.image) {
+      newErrors.image = 'No Avatar is selected'
     }
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('Registering...')
-      setErrors({
-        name: '',
-        surname: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      })
+      try {
+        const formData = new FormData()
+        formData.append('email', data.email)
+        formData.append('password', data.password)
+        formData.append('first_name', data.name)
+        formData.append('last_name', data.surname)
+        formData.append('image', data.image, data.image.name)
+        const signUpResponse = await api.post(
+          '/user/sign-up/',
+          formData,
+          false,
+          'multipart/form-data',
+        )
+
+        dispatch(
+          setAuthMessage({
+            message: signUpResponse.message,
+          }),
+        )
+        navigate('/login')
+      } catch (error) {
+        console.log('Sign-up issue : ', error)
+      }
     } else {
       setErrors(newErrors)
     }
+  }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = e.target
+    if (!files || files.length === 0) return
+    const selectedFile = files[0]
+
+    setData({
+      ...data,
+      image: selectedFile,
+    })
   }
   return (
     <div className="flex rounded-2xl items-center justify-center pt-5 pr-10 pb-10 pl-10 bg-bg--Wrapper">
@@ -75,7 +120,27 @@ const RegistrationForm = () => {
           Sign Up
         </h1>
         <div className="flex justify-center pb-3">
-          <AvatarIcon />
+          <label htmlFor="file">
+            {data.image ? (
+              <img
+                src={URL.createObjectURL(data.image)}
+                alt="Selected Avatar"
+                className="rounded-full h-[120px] w-[120px] object-cover"
+              />
+            ) : (
+              <AvatarIcon />
+            )}
+            <input
+              type="file"
+              id="file"
+              onChange={handleFileChange}
+              accept="image/*"
+              className="hidden"
+            />
+          </label>
+          {errors.image && (
+            <p className="text-red-500 text-xs italic">{errors.image}</p>
+          )}
         </div>
         <form onSubmit={handleRegistration}>
           <div className="flex pb-4 gap-4">
@@ -83,20 +148,16 @@ const RegistrationForm = () => {
               id="name"
               type="text"
               placeholder="Name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              value={data.name}
+              onChange={(e) => setData({ ...data, name: e.target.value })}
               errors={errors.name}
             />
             <Input
               id="surname"
               type="text"
               placeholder="Surname"
-              value={formData.surname}
-              onChange={(e) =>
-                setFormData({ ...formData, surname: e.target.value })
-              }
+              value={data.surname}
+              onChange={(e) => setData({ ...data, surname: e.target.value })}
               errors={errors.surname}
             />
           </div>
@@ -105,10 +166,8 @@ const RegistrationForm = () => {
               id="email"
               type="email"
               placeholder="Email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              value={data.email}
+              onChange={(e) => setData({ ...data, email: e.target.value })}
               errors={errors.email}
             />
           </div>
@@ -117,19 +176,17 @@ const RegistrationForm = () => {
               id="password"
               type="password"
               placeholder="Password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              value={data.password}
+              onChange={(e) => setData({ ...data, password: e.target.value })}
               errors={errors.password}
             />
             <Input
               id="repeat-password"
               type="password"
               placeholder="Confirm password"
-              value={formData.confirmPassword}
+              value={data.confirmPassword}
               onChange={(e) =>
-                setFormData({ ...formData, confirmPassword: e.target.value })
+                setData({ ...data, confirmPassword: e.target.value })
               }
               errors={errors.confirmPassword}
             />

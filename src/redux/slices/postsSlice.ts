@@ -26,22 +26,28 @@ interface PostsState {
   count: number
   next: string | null
   previous: string | null
+  editable: Post | null
 }
 export const fetchPosts = createAsyncThunk(
   'posts/fetchPosts',
   async (url: string) => {
     const response = await api.get(url)
-    console.log('RESPONSE', response)
-    // Assuming that the API response has the same structure as your PostsState
     return response as PostsState
   },
 )
-
+export const fetchPost = createAsyncThunk(
+  'posts/fetchPost',
+  async (url: string) => {
+    const response = await api.get(url)
+    return response as Post
+  },
+)
 const initialState: PostsState = {
   results: [],
   count: 0,
   next: null,
   previous: null,
+  editable: null,
 }
 
 const postsSlice = createSlice({
@@ -49,24 +55,21 @@ const postsSlice = createSlice({
   initialState,
   reducers: {
     getPosts: (state, action: PayloadAction<PostsState>) => {
-      // Update state with the fetched posts data
       state.results = action.payload.results
       state.count = action.payload.count
       state.next = action.payload.next
       state.previous = action.payload.previous
-      console.log('STATE', state)
     },
     addPost: (state, action: PayloadAction<Post>) => {
       state.results.push(action.payload)
     },
-    editPost: (
-      state,
-      action: PayloadAction<{ id: number; updatedPost: Post }>,
-    ) => {
-      const { id, updatedPost } = action.payload
-      const index = state.results.findIndex((post) => post.id === id)
+    editPost: (state, action: PayloadAction<Post>) => {
+      const index = state.results.findIndex(
+        (post) => post.id === action.payload.id,
+      )
       if (index !== -1) {
-        state.results[index] = updatedPost
+        state.results[index] = action.payload
+        state.editable = action.payload
       }
     },
     deletePost: (state, action: PayloadAction<number>) => {
@@ -76,10 +79,11 @@ const postsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchPosts.fulfilled, (state, action) => {
-      console.log('dispatched', action)
-      // Dispatch the getPosts action to update the Redux state
       postsSlice.caseReducers.getPosts(state, action)
-    })
+    }),
+      builder.addCase(fetchPost.fulfilled, (state, action) => {
+        postsSlice.caseReducers.editPost(state, action)
+      })
   },
 })
 

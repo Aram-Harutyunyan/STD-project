@@ -90,14 +90,17 @@ const api = {
     endpoint: string,
     data: any,
     requiresAuth = true,
+    contentType = 'application/json',
   ): Promise<any> => {
     try {
+      const formattedData =
+        contentType === 'application/json' ? JSON.stringify(data) : data
       const requestOptions: RequestInit = {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': contentType,
         },
-        body: JSON.stringify(data),
+        body: formattedData,
       }
 
       if (requiresAuth) {
