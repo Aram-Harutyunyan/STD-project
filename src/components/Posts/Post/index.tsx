@@ -24,13 +24,13 @@ const Post = (post: Props) => {
   return (
     <div
       key={post.id}
-      className="flex justify-between gap-1 p-4 rounded-lg overflow-hidden bg-white shadow-md"
+      className="flex gap-3 p-4 rounded-lg overflow-hidden bg-white shadow-md"
     >
-      <img src={img} className="w-2/5 rounded-lg" />
-      <div className="flex flex-col justify-start gap-2">
+      <img src={post.image} className="w-2/5 rounded-lg" />
+      <div className="flex flex-col flex-1 justify-start gap-2">
         <div className="flex justify-between items-center">
           <TitleValue title="Name" value={post.title} />
-          <Icons />
+          <Icons id={post.id} />
         </div>
         <TitleValue title="Description" value={post.description} />
         <TitleValue title="Category" value={post.category.name} />
