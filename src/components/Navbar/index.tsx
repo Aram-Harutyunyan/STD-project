@@ -15,9 +15,12 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="bg-white p-4 fixed top-0 z-10">
+    <nav className="bg-white p-4 w-full fixed top-0 z-10">
       <div className="flex justify-between items-center">
-        <div className="text-ct--Blue">
+        <div
+          className="text-ct--Blue cursor-pointer"
+          onClick={() => navigate('/posts')}
+        >
           <span className="font-semibold">Posts</span>
         </div>
         <div className="flex items-center gap-4">
