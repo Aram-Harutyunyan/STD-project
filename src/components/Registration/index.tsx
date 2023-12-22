@@ -82,7 +82,7 @@ const RegistrationForm = () => {
         formData.append('password', data.password)
         formData.append('first_name', data.name)
         formData.append('last_name', data.surname)
-        formData.append('image', data.image, data.image.name)
+        formData.append('image', data.image)
         const signUpResponse = await api.post(
           '/user/sign-up/',
           formData,
@@ -119,7 +119,7 @@ const RegistrationForm = () => {
         <h1 className="flex pb-4 justify-center text-2xl text-ct--Blue">
           Sign Up
         </h1>
-        <div className="flex justify-center pb-3">
+        <div className="flex flex-col items-center justify-center pb-3">
           <label htmlFor="file">
             {data.image ? (
               <img
