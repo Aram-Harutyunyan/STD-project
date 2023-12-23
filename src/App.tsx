@@ -4,8 +4,7 @@ import Login from './components/Login'
 import Registration from './components/Registration'
 import NotFound from './components/NotFound'
 import Posts from './components/Posts'
-import PostCreate from './components/Posts/postsCreate'
-import PostEdit from './components/Posts/postsEdit'
+import PostCreate from './components/Posts/postsCreateEdit'
 import ProtectedRoute from './components/protectedRoute'
 import AuthorizationContainer from './Containers/AuthorizationContainer'
 import './App.css'
@@ -51,7 +50,7 @@ const App = () => {
             path="edit/:id"
             element={
               <ProtectedRoute>
-                <PostEdit />
+                <PostCreate />
               </ProtectedRoute>
             }
           />

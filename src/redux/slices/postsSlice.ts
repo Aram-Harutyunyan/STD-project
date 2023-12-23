@@ -42,6 +42,14 @@ export const fetchPost = createAsyncThunk(
     return response as Post
   },
 )
+
+export const postDelete = createAsyncThunk(
+  'posts/postDelete',
+  async (id: number) => {
+    const response = await api.delete(`/post/crud/${id}/`)
+    return response
+  },
+)
 const initialState: PostsState = {
   results: [],
   count: 0,
@@ -69,8 +77,8 @@ const postsSlice = createSlice({
       )
       if (index !== -1) {
         state.results[index] = action.payload
-        state.editable = action.payload
       }
+      state.editable = action.payload
     },
     deletePost: (state, action: PayloadAction<number>) => {
       const postId = action.payload
@@ -78,11 +86,19 @@ const postsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchPosts.fulfilled, (state, action) => {
-      postsSlice.caseReducers.getPosts(state, action)
-    }),
-      builder.addCase(fetchPost.fulfilled, (state, action) => {
+    builder
+      .addCase(fetchPosts.fulfilled, (state, action) => {
+        postsSlice.caseReducers.getPosts(state, action)
+      })
+      .addCase(fetchPost.fulfilled, (state, action) => {
         postsSlice.caseReducers.editPost(state, action)
+      })
+      // Delete body should be changed in backend for more accurate solution
+      .addCase(postDelete.rejected, (state, action) => {
+        postsSlice.caseReducers.deletePost(state, {
+          ...action,
+          payload: action.meta.arg,
+        })
       })
   },
 })

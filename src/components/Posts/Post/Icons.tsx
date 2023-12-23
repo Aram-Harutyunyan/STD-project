@@ -14,7 +14,7 @@ const Icons = ({ id }: { id: number }) => {
     navigate(`/posts/edit/${id}/`)
   }
   const handleDelete = () => {
-    dispatch(postDelete(`/post/crud/${id}/`))
+    dispatch(postDelete(id))
     setIsModalOpen(false)
   }
   return (
