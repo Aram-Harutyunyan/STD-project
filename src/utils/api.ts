@@ -10,6 +10,7 @@ const handleResponse = async (response: Response) => {
     const error = await response.json()
     throw new Error(error.message || 'Something went wrong')
   }
+
   return response.json()
 }
 
@@ -30,7 +31,6 @@ const api = {
     const refreshToken =
       sessionStorage.getItem('refreshToken') ||
       localStorage.getItem('refreshToken')
-    console
     return { authToken, refreshToken }
   },
 
@@ -51,6 +51,7 @@ const api = {
           body: JSON.stringify({ refresh: refreshToken }),
         })
         if (refreshResponse.ok) {
+          console.log('401', refreshResponse.ok)
           const { access, refresh } = await refreshResponse.json()
           updateAuthToken(access, refresh)
 
@@ -95,14 +96,18 @@ const api = {
     try {
       const formattedData =
         contentType === 'application/json' ? JSON.stringify(data) : data
-      const requestOptions: RequestInit = {
+      let requestOptions: RequestInit = {
         method: 'POST',
-        headers: {
-          'Content-Type': contentType,
-        },
         body: formattedData,
       }
-
+      if (contentType === 'application/json') {
+        requestOptions = {
+          ...requestOptions,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      }
       if (requiresAuth) {
         const { authToken } = api.getAuthToken()
 
@@ -130,19 +135,32 @@ const api = {
     }
   },
 
-  put: async (endpoint: string, data: any): Promise<any> => {
+  put: async (
+    endpoint: string,
+    data: any,
+    contentType = 'application/json',
+  ): Promise<any> => {
     try {
+      const formattedData =
+        contentType === 'application/json' ? JSON.stringify(data) : data
       const { authToken } = api.getAuthToken()
-
+      let requestOptions: RequestInit = {
+        method: 'PUT',
+        body: formattedData,
+      }
       const response = await fetch(`${BASE_URL}${endpoint}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `JWT ${authToken}`,
         },
-        body: JSON.stringify(data),
+        body: formattedData,
       })
-
+      if (contentType === 'application/json') {
+        requestOptions.headers = {
+          ...requestOptions.headers,
+          'Content-Type': 'application/json',
+        }
+      }
       if (response.status === 401) {
         const retryOriginalRequest = await api.handle401Error()
 
@@ -163,8 +181,8 @@ const api = {
       const { authToken } = api.getAuthToken()
 
       const response = await fetch(`${BASE_URL}${endpoint}`, {
+        method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `JWT ${authToken}`,
         },
       })
@@ -173,10 +191,9 @@ const api = {
         const retryOriginalRequest = await api.handle401Error()
 
         if (retryOriginalRequest) {
-          return api.get(endpoint)
+          return api.delete(endpoint)
         }
       }
-
       return handleResponse(response)
     } catch (error) {
       console.error('Error during DELETE request:', error)
