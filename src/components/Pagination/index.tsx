@@ -1,6 +1,6 @@
 import ReactPaginate from 'react-paginate'
 import { fetchPosts } from '../../redux/slices/postsSlice'
-import { useAppDispatch, useAppSelector } from '../../hooks'
+import { useAppDispatch } from '../../hooks'
 
 interface Props {
   count: number
